@@ -114,9 +114,11 @@ class TimeMasking(nn.Module):
             if not batch_dim:
                 x = x.unsqueeze(0)
 
-            batch_size, time_steps, channels = x.shape
+            batch_size, time_steps, channels = x.shape # (batch_size, ~600, 256)
+            # print(x.shape)
 
             # Apply n_masks times
+            # print(x[0,:,0])
             for _ in range(self.n_masks):
                 # Randomly choose mask length
                 mask_length = torch.randint(1, self.max_mask_length + 1, (1,)).item()
@@ -127,6 +129,8 @@ class TimeMasking(nn.Module):
                 
                 # Apply mask
                 x[:, mask_start:mask_start + mask_length, :] = self.mask_value
+            # print('------')
+            # print(x[0,:,0])
 
             if not batch_dim:
                 x = x.squeeze(0)

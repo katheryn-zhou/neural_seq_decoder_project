@@ -1,5 +1,5 @@
 
-modelName = 'speechBaseline4_timeMask'
+modelName = 'speechBaseline4_layerNorm'
 
 args = {}
 args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
@@ -29,10 +29,12 @@ args['grad_clip'] = 5.0
 args['warmupSteps'] = 500
 args['nMasks'] = 2 # number of time masks to implement per batch, make 0 to skip time masking
 args['maxMaskLength'] = 20 # max number of timesteps to mask per single mask
+args['layerNorm'] = True # whether or not to have layernorm layer between GRU and output
 print(f"grad_clip = {args['grad_clip']}")
 print(f"warmupSteps = {args['warmupSteps']}")
 print(f"nMasks = {args['nMasks']}")
 print(f'outputDir {args["outputDir"]}')
+print(f"layerNorm = {args['layerNorm']}")
 
 from neural_decoder.neural_decoder_trainer import trainModel
 

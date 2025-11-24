@@ -7,6 +7,7 @@ from .augmentations import GaussianSmoothing
 class GRUDecoder(nn.Module):
     def __init__(
         self,
+        layerNorm,
         neural_dim,
         n_classes,
         hidden_dim,
@@ -20,6 +21,9 @@ class GRUDecoder(nn.Module):
         bidirectional=False,
     ):
         super(GRUDecoder, self).__init__()
+
+        assert type(layerNorm) == bool
+        self.layerNorm = layerNorm
 
         # Defining the number of layers and the nodes in each layer
         self.layer_dim = layer_dim
@@ -74,11 +78,15 @@ class GRUDecoder(nn.Module):
 
         # rnn outputs
         if self.bidirectional:
-            self.fc_decoder_out = nn.Linear(
-                hidden_dim * 2, n_classes + 1
-            )  # +1 for CTC blank
+            rnn_output_dim = hidden_dim * 2
         else:
-            self.fc_decoder_out = nn.Linear(hidden_dim, n_classes + 1)  # +1 for CTC blank
+            rnn_output_dim = hidden_dim
+        if self.layerNorm == True:
+            print('implementing layer normalization')
+            self.layer_norm = nn.LayerNorm(rnn_output_dim)
+        else:
+            print('NO layer norm')
+        self.fc_decoder_out = nn.Linear(rnn_output_dim, n_classes + 1)  # +1 for CTC blank
 
     def forward(self, neuralInput, dayIdx):
         neuralInput = torch.permute(neuralInput, (0, 2, 1))
@@ -119,5 +127,9 @@ class GRUDecoder(nn.Module):
         hid, _ = self.gru_decoder(stridedInputs, h0.detach())
 
         # get seq
+        if self.layerNorm:
+            # NORMALIZING FORWARD RUN
+            # print('NORMALIZING FORWARD RUN')
+            hid = self.layer_norm(hid)
         seq_out = self.fc_decoder_out(hid)
         return seq_out

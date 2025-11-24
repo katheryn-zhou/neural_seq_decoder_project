@@ -71,6 +71,7 @@ def trainModel(args):
     )
 
     model = GRUDecoder(
+        layerNorm=args["layerNorm"],
         neural_dim=args["nInputFeatures"],
         n_classes=args["nClasses"],
         hidden_dim=args["nUnits"],
@@ -174,7 +175,7 @@ def trainModel(args):
             
             # print current learning rate, to make sure the warmup learning rate scheduling is working as expected
             print(f"Current learning rate: {optimizer.param_groups[0]['lr']}")
-            print(f"Current learning rate(s) from scheduler: {scheduler.get_last_lr()}")
+            # print(f"Current learning rate(s) from scheduler: {scheduler.get_last_lr()}")
 
             with torch.no_grad():
                 model.eval()
@@ -250,6 +251,7 @@ def loadModel(modelDir, nInputLayers=24, device="cuda"):
         args = pickle.load(handle)
 
     model = GRUDecoder(
+        layerNorm=args["layerNorm"],
         neural_dim=args["nInputFeatures"],
         n_classes=args["nClasses"],
         hidden_dim=args["nUnits"],
