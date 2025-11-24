@@ -1,5 +1,5 @@
 
-modelName = 'speechBaseline4_warmupLR'
+modelName = 'speechBaseline4_timeMask'
 
 args = {}
 args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
@@ -27,7 +27,7 @@ args['bidirectional'] = False # True
 args['l2_decay'] = 1e-5 # amount of L2 regularization that is applied
 args['grad_clip'] = 5.0
 args['warmupSteps'] = 500
-args['nMasks'] = 0 #2 # number of time masks to implement per batch, make 0 to skip time masking
+args['nMasks'] = 2 # number of time masks to implement per batch, make 0 to skip time masking
 args['maxMaskLength'] = 20 # max number of timesteps to mask per single mask
 print(f"grad_clip = {args['grad_clip']}")
 print(f"warmupSteps = {args['warmupSteps']}")

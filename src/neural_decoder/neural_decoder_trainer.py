@@ -109,7 +109,7 @@ def trainModel(args):
 
     # initialize time masker
     if args['nMasks'] > 0:
-        print('arg n_masks greater than 0')
+        print(f"Initializing time mask. args['nMasks'] = {args['nMasks']}")
         time_masker = TimeMasking(max_mask_length=args['maxMaskLength'],
                                   n_masks=args['nMasks'])
         time_masker.train()

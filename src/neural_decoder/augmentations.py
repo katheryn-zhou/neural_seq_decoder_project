@@ -109,9 +109,7 @@ class TimeMasking(nn.Module):
         Returns:
             Masked tensor with same shape
         """
-        print('asdfsfasd')
         if self.training:  # Only apply during training
-            print('self.train()')
             batch_dim = x.dim() == 3
             if not batch_dim:
                 x = x.unsqueeze(0)
