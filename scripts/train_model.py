@@ -25,6 +25,8 @@ args['strideLen'] = 4 # umber of neural time bins the input is shifted forward a
 args['kernelLen'] = 32 # number of neural time bins fed to the GRU at each timestep
 args['bidirectional'] = False # True
 args['l2_decay'] = 1e-5 # amount of L2 regularization that is applied
+args['grad_norm'] = 5.0
+print(f"grad_norm = {args['grad_norm']}")
 
 from neural_decoder.neural_decoder_trainer import trainModel
 
