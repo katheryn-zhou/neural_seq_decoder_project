@@ -1,9 +1,9 @@
 
-modelName = 'speechBaseline4_batch128'
+modelName = 'speechBaseline4_warmupLR'
 
 args = {}
-args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder/models/" + modelName
-args['datasetPath'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder/ptDecoder_ctc"
+args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
+args['datasetPath'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/ptDecoder_ctc"
 # args['outputDir'] = '/oak/stanford/groups/henderj/stfan/logs/speech_logs/' + modelName
 # args['datasetPath'] = '/oak/stanford/groups/henderj/fwillett/speech/ptDecoder_ctc'
 args['seqLen'] = 150
@@ -25,10 +25,14 @@ args['strideLen'] = 4 # umber of neural time bins the input is shifted forward a
 args['kernelLen'] = 32 # number of neural time bins fed to the GRU at each timestep
 args['bidirectional'] = False # True
 args['l2_decay'] = 1e-5 # amount of L2 regularization that is applied
-args['gradNorm'] = 5.0
+args['grad_clip'] = 5.0
 args['warmupSteps'] = 500
-print(f"gradNorm = {args['gradNorm']}")
+args['nMasks'] = 0 #2 # number of time masks to implement per batch, make 0 to skip time masking
+args['maxMaskLength'] = 20 # max number of timesteps to mask per single mask
+print(f"grad_clip = {args['grad_clip']}")
 print(f"warmupSteps = {args['warmupSteps']}")
+print(f"nMasks = {args['nMasks']}")
+print(f'outputDir {args["outputDir"]}')
 
 from neural_decoder.neural_decoder_trainer import trainModel
 

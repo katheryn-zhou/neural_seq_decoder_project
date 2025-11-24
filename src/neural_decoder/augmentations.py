@@ -89,3 +89,50 @@ class GaussianSmoothing(nn.Module):
             filtered (torch.Tensor): Filtered output.
         """
         return self.conv(input, weight=self.weight, groups=self.groups, padding="same")
+    
+class TimeMasking(nn.Module):
+    """
+    SpecAugment-style time masking for neural time series.
+    Randomly masks out consecutive time steps.
+    """
+    def __init__(self, max_mask_length=20, n_masks=2, mask_value=0.0):
+        super().__init__()
+        self.max_mask_length = max_mask_length
+        self.n_masks = n_masks
+        self.mask_value = mask_value
+        print('TIME MASK INITIALIZED')
+
+    def forward(self, x):
+        """
+        Args:
+            x: Input tensor (batch, time, channels) or (time, channels)
+        Returns:
+            Masked tensor with same shape
+        """
+        print('asdfsfasd')
+        if self.training:  # Only apply during training
+            print('self.train()')
+            batch_dim = x.dim() == 3
+            if not batch_dim:
+                x = x.unsqueeze(0)
+
+            batch_size, time_steps, channels = x.shape
+
+            # Apply n_masks times
+            for _ in range(self.n_masks):
+                # Randomly choose mask length
+                mask_length = torch.randint(1, self.max_mask_length + 1, (1,)).item()
+                
+                # Randomly choose start position
+                max_start = max(1, time_steps - mask_length)
+                mask_start = torch.randint(0, max_start, (1,)).item()
+                
+                # Apply mask
+                x[:, mask_start:mask_start + mask_length, :] = self.mask_value
+
+            if not batch_dim:
+                x = x.squeeze(0)
+        else:
+            print('self.eval()')
+
+        return x

@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader
 from .model import GRUDecoder
 from .dataset import SpeechDataset
 from .training_enhancements import create_warmup_scheduler
+from .augmentations import TimeMasking
 
 def getDatasetLoaders(
     datasetName,
@@ -106,6 +107,13 @@ def trainModel(args):
         lr_end=args['lrEnd']
     )
 
+    # initialize time masker
+    if args['nMasks'] > 0:
+        print('arg n_masks greater than 0')
+        time_masker = TimeMasking(max_mask_length=args['maxMaskLength'],
+                                  n_masks=args['nMasks'])
+        time_masker.train()
+
     # --train--
     testLoss = []
     testCER = []
@@ -131,6 +139,9 @@ def trainModel(args):
                 torch.randn([X.shape[0], 1, X.shape[2]], device=device)
                 * args["constantOffsetSD"]
             )
+
+        if args['nMasks'] > 0:
+            X = time_masker(X)
 
         # Compute prediction error
         pred = model.forward(X, dayIdx)
@@ -160,6 +171,11 @@ def trainModel(args):
 
         # Eval
         if batch % 100 == 0:
+            
+            # print current learning rate, to make sure the warmup learning rate scheduling is working as expected
+            print(f"Current learning rate: {optimizer.param_groups[0]['lr']}")
+            print(f"Current learning rate(s) from scheduler: {scheduler.get_last_lr()}")
+
             with torch.no_grad():
                 model.eval()
                 allLoss = []
