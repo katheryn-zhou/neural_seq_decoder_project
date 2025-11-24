@@ -1,5 +1,5 @@
 
-modelName = 'speechBaseline4_layerNorm'
+modelName = 'speechBaseline4_CTCsmoothing'
 
 args = {}
 args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
@@ -30,11 +30,13 @@ args['warmupSteps'] = 500
 args['nMasks'] = 2 # number of time masks to implement per batch, make 0 to skip time masking
 args['maxMaskLength'] = 20 # max number of timesteps to mask per single mask
 args['layerNorm'] = True # whether or not to have layernorm layer between GRU and output
+args['CTCsmoothing'] = True
 print(f"grad_clip = {args['grad_clip']}")
 print(f"warmupSteps = {args['warmupSteps']}")
 print(f"nMasks = {args['nMasks']}")
 print(f'outputDir {args["outputDir"]}')
 print(f"layerNorm = {args['layerNorm']}")
+print(f"CTCsmoothing = {args['CTCsmoothing']}")
 
 from neural_decoder.neural_decoder_trainer import trainModel
 

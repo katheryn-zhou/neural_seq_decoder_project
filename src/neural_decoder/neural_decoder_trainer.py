@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 
 from .model import GRUDecoder
 from .dataset import SpeechDataset
-from .training_enhancements import create_warmup_scheduler
+from .training_enhancements import create_warmup_scheduler, LabelSmoothingCTCLoss
 from .augmentations import TimeMasking
 
 def getDatasetLoaders(
@@ -85,7 +85,12 @@ def trainModel(args):
         bidirectional=args["bidirectional"],
     ).to(device)
 
-    loss_ctc = torch.nn.CTCLoss(blank=0, reduction="mean", zero_infinity=True)
+    if args['CTCsmoothing'] == True:
+        print('CTC SMOOTHING')
+        loss_ctc = LabelSmoothingCTCLoss()
+    else:
+        print('regular CTC loss')
+        loss_ctc = torch.nn.CTCLoss(blank=0, reduction="mean", zero_infinity=True)
     optimizer = torch.optim.Adam(
         model.parameters(),
         lr=args["lrStart"],
