@@ -1,5 +1,5 @@
 
-modelName = 'speechBaseline4_CTCsmoothing2'
+modelName = 'speechBaseline4_CTCsmoothing3'
 
 args = {}
 args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
@@ -8,11 +8,11 @@ args['datasetPath'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_
 # args['datasetPath'] = '/oak/stanford/groups/henderj/fwillett/speech/ptDecoder_ctc'
 args['seqLen'] = 150
 args['maxTimeSeriesLen'] = 1200
-args['batchSize'] = 128
+args['batchSize'] = 64 #128
 args['lrStart'] = 0.03
 args['lrEnd'] = 0.002
 args['nUnits'] = 1024
-args['nBatch'] = 10000 #3000
+args['nBatch'] = 15000 #3000
 args['nLayers'] = 5 # number of GRU layers.
 args['seed'] = 0
 args['nClasses'] = 40 # number of output classes, not including the CTC blank token

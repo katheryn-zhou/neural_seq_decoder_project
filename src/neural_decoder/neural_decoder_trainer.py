@@ -182,15 +182,40 @@ def trainModel(args):
 
         # print(endTime - startTime)
 
+        # record info from last training batch BEFORE evaluation
+        if batch % 100 == 0:
+            with torch.no_grad():
+                # print current learning rate, to make sure the warmup learning rate scheduling is working as expected
+                curr_lr = optimizer.param_groups[0]['lr']
+                print(f"Current learning rate: {curr_lr}")
+                # print(f"Current learning rate(s) from scheduler: {scheduler.get_last_lr()}")
+
+                # record training loss
+                writer.add_scalar('Loss/train', loss, batch)
+
+                adjustedLens = ((X_len - model.kernelLen) / model.strideLen).to(torch.int32)
+                train_total_edit_distance = 0
+                train_total_seq_length = 0
+                for iterIdx in range(pred.shape[0]): # for each element of batch?
+                    decodedSeq = torch.argmax(
+                        torch.tensor(pred[iterIdx, 0 : adjustedLens[iterIdx], :]),
+                        dim=-1,
+                    )  # [num_seq,]
+                    decodedSeq = torch.unique_consecutive(decodedSeq, dim=-1)
+                    decodedSeq = decodedSeq.cpu().detach().numpy()
+                    decodedSeq = np.array([i for i in decodedSeq if i != 0])
+                    trueSeq = np.array(y[iterIdx][0 : y_len[iterIdx]].cpu().detach())
+                    matcher = SequenceMatcher(
+                        a=trueSeq.tolist(), b=decodedSeq.tolist()
+                    )
+                    train_total_edit_distance += matcher.distance()
+                    train_total_seq_length += len(trueSeq)
+                train_cer = train_total_edit_distance / train_total_seq_length
+                writer.add_scalar('Metrics/train_CER', train_cer, batch)
+                print(f'train_cer = {train_cer}')
+
         # Eval
         if batch % 100 == 0:
-            # record training loss
-            writer.add_scalar('Loss/train', loss, batch)
-            # print current learning rate, to make sure the warmup learning rate scheduling is working as expected
-            curr_lr = optimizer.param_groups[0]['lr']
-            print(f"Current learning rate: {curr_lr}")
-            # print(f"Current learning rate(s) from scheduler: {scheduler.get_last_lr()}")
-
             with torch.no_grad():
                 model.eval()
                 allLoss = []
@@ -218,7 +243,7 @@ def trainModel(args):
                     adjustedLens = ((X_len - model.kernelLen) / model.strideLen).to(
                         torch.int32
                     )
-                    for iterIdx in range(pred.shape[0]):
+                    for iterIdx in range(pred.shape[0]): # for each element of batch?
                         decodedSeq = torch.argmax(
                             torch.tensor(pred[iterIdx, 0 : adjustedLens[iterIdx], :]),
                             dim=-1,
@@ -251,7 +276,7 @@ def trainModel(args):
             testLoss.append(avgDayLoss)
             testCER.append(cer)
             writer.add_scalar('Loss/valid', avgDayLoss, batch)
-            writer.add_scalar('Metrics/CER', cer, batch)
+            writer.add_scalar('Metrics/valid_CER', cer, batch)
             writer.add_scalar('Metrics/learning_rate', curr_lr, batch)
 
             tStats = {}
