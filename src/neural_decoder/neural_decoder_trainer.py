@@ -8,6 +8,8 @@ import numpy as np
 import torch
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
+import shutil
 
 from .model import GRUDecoder
 from .dataset import SpeechDataset
@@ -61,6 +63,11 @@ def trainModel(args):
     torch.manual_seed(args["seed"])
     np.random.seed(args["seed"])
     device = "cuda"
+
+    if os.path.exists(args['outputDir'] + '/tensorboard'):
+        shutil.rmtree(args['outputDir'] + '/tensorboard')
+        print(f"Folder '{args['outputDir'] + '/tensorboard'}' and its contents deleted successfully.")
+    writer = SummaryWriter(log_dir = args['outputDir'] + '/tensorboard')
 
     with open(args["outputDir"] + "/args", "wb") as file:
         pickle.dump(args, file)
@@ -177,9 +184,11 @@ def trainModel(args):
 
         # Eval
         if batch % 100 == 0:
-            
+            # record training loss
+            writer.add_scalar('Loss/train', loss, batch)
             # print current learning rate, to make sure the warmup learning rate scheduling is working as expected
-            print(f"Current learning rate: {optimizer.param_groups[0]['lr']}")
+            curr_lr = optimizer.param_groups[0]['lr']
+            print(f"Current learning rate: {curr_lr}")
             # print(f"Current learning rate(s) from scheduler: {scheduler.get_last_lr()}")
 
             with torch.no_grad():
@@ -241,6 +250,9 @@ def trainModel(args):
                 torch.save(model.state_dict(), args["outputDir"] + "/modelWeights")
             testLoss.append(avgDayLoss)
             testCER.append(cer)
+            writer.add_scalar('Loss/valid', avgDayLoss, batch)
+            writer.add_scalar('Metrics/CER', cer, batch)
+            writer.add_scalar('Metrics/learning_rate', curr_lr, batch)
 
             tStats = {}
             tStats["testLoss"] = np.array(testLoss)

@@ -1,5 +1,5 @@
 
-modelName = 'speechBaseline4_CTCsmoothing'
+modelName = 'speechBaseline4_CTCsmoothing2'
 
 args = {}
 args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
@@ -8,8 +8,8 @@ args['datasetPath'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_
 # args['datasetPath'] = '/oak/stanford/groups/henderj/fwillett/speech/ptDecoder_ctc'
 args['seqLen'] = 150
 args['maxTimeSeriesLen'] = 1200
-args['batchSize'] = 64
-args['lrStart'] = 0.02
+args['batchSize'] = 128
+args['lrStart'] = 0.03
 args['lrEnd'] = 0.002
 args['nUnits'] = 1024
 args['nBatch'] = 10000 #3000
