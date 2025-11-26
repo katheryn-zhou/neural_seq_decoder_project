@@ -41,7 +41,7 @@ class LabelSmoothingCTCLoss(torch.nn.Module):
             # Mix CTC loss with entropy regularization
             # (1 - smoothing) weight on correct predictions
             # smoothing weight on encouraging uncertainty
-            loss = (1 - self.smoothing) * loss - self.smoothing * entropy
+            loss = ((1 - self.smoothing) * loss) - (self.smoothing * entropy)
 
         if self.reduction == 'mean':
             return loss.mean()
