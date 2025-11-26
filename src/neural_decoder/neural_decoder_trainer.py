@@ -94,12 +94,10 @@ def trainModel(args):
         causalGaussian=args['causalGaussian']
     ).to(device)
 
-    if args['CTCsmoothing'] == True:
-        print('CTC SMOOTHING')
-        loss_ctc = LabelSmoothingCTCLoss(blank=0, smoothing=args['CTCsmoothing'], reduction='mean', zero_infinity=True)
-    else:
-        print('regular CTC loss')
-        loss_ctc = torch.nn.CTCLoss(blank=0, reduction="mean", zero_infinity=True)
+    loss_ctc = LabelSmoothingCTCLoss(blank=0, smoothing=args['CTCsmoothing'], reduction='mean', zero_infinity=True)
+    # else:
+    #     print('regular CTC loss')
+    #     loss_ctc = torch.nn.CTCLoss(blank=0, reduction="mean", zero_infinity=True)
     optimizer = torch.optim.Adam(
         model.parameters(),
         lr=args["lrStart"],

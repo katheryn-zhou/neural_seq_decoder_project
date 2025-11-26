@@ -29,6 +29,7 @@ class GRUDecoder(nn.Module):
         # Defining the number of layers and the nodes in each layerr
         self.layer_dim = layer_dim
         self.hidden_dim = hidden_dim
+        print(f'GRU HIDDEN DIM = {self.hidden_dim}')
         self.neural_dim = neural_dim
         self.n_classes = n_classes
         self.nDays = nDays

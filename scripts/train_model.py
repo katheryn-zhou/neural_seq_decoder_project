@@ -3,10 +3,10 @@ import numpy as np
 modelName = 'katherine_best_causalGaussian_compsigma'
 
 args = {}
-args['outputDir'] = '/home/onuralp/Desktop/c243/neural_seq_decoder_project/logs/speech_logs/' + modelName
-args['datasetPath'] = '/home/onuralp/Desktop/c243/neural_seq_decoder/ptDecoder_ctc'
-# args['outputDir'] = '/oak/stanford/groups/henderj/stfan/logs/speech_logs/' + modelName
-# args['datasetPath'] = '/oak/stanford/groups/henderj/fwillett/speech/ptDecoder_ctc'
+# args['outputDir'] = '/home/onuralp/Desktop/c243/neural_seq_decoder_project/logs/speech_logs/' + modelName
+# args['datasetPath'] = '/home/onuralp/Desktop/c243/neural_seq_decoder/ptDecoder_ctc'
+args['outputDir'] = '/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/' + modelName
+args['datasetPath'] = '/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/ptDecoder_ctc'
 args['seqLen'] = 150
 args['maxTimeSeriesLen'] = 1200
 args['batchSize'] = 64 #128
@@ -21,7 +21,7 @@ args['nInputFeatures'] = 256 # number of neural features (spike band power and t
 args['dropout'] = 0.4 # dropout percentage used for GRU layers
 args['whiteNoiseSD'] = 0.8 # amount of white noise augmentation to add to neural data during training
 args['constantOffsetSD'] = 0.2
-args['gaussianSmoothWidth'] = 2.0/np.sqrt(2) # onvolves the neural data with a Gaussian kernel with the specified width
+args['gaussianSmoothWidth'] = 2.0 # onvolves the neural data with a Gaussian kernel with the specified width
 args['strideLen'] = 4 # umber of neural time bins the input is shifted forward at each timestep. This controls how often the GRU makes an output
 args['kernelLen'] = 32 # number of neural time bins fed to the GRU at each timestep
 args['bidirectional'] = False # True
@@ -38,11 +38,24 @@ import sys
 sys.path.insert(1, '/home/onuralp/Desktop/c243/neural_seq_decoder_project/src')
 from neural_decoder.neural_decoder_trainer import trainModel
 
-# trainModel(args)
+trainModel(args)
 
-# test different smoothing values for CTC loss
-for smooth_value in [0, 0.1, 0.2, 0.4, 0.6, 0.8, 1]:
-    modelName = f'speechBaseline4_smoothing={smooth_value:.4g}'.replace(".", "_")
-    args['CTCsmoothing'] = smooth_value
-    args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
-    trainModel(args)
+# # test different smoothing values for CTC loss
+# for smooth_value in [0, 0.1, 0.2, 0.4, 0.6, 0.8, 1]:
+#     modelName = f'CTCsmoothing{smooth_value}'
+#     args['CTCsmoothing'] = smooth_value
+#     args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
+#     trainModel(args)
+
+# args['CTCsmoothing'] = 0.1
+
+# for nUnits in [32, 64, 128, 256, 512, 1024, 2048]:
+#     modelName = f'nUnits{nUnits}'
+#     args['nUnits'] = nUnits
+#     args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
+#     trainModel(args)
+
+# args['nUnits'] = 1024
+
+
+
