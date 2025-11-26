@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from .augmentations import GaussianSmoothing
+from .augmentations import GaussianSmoothing, CausalGaussianSmoothing
 
 
 class GRUDecoder(nn.Module):
@@ -19,6 +19,7 @@ class GRUDecoder(nn.Module):
         kernelLen=14,
         gaussianSmoothWidth=0,
         bidirectional=False,
+        causalGaussian=False
     ):
         super(GRUDecoder, self).__init__()
 
@@ -41,9 +42,14 @@ class GRUDecoder(nn.Module):
         self.unfolder = torch.nn.Unfold(
             (self.kernelLen, 1), dilation=1, padding=0, stride=self.strideLen
         )
-        self.gaussianSmoother = GaussianSmoothing(
-            neural_dim, 20, self.gaussianSmoothWidth, dim=1
-        )
+        if causalGaussian:
+            self.gaussianSmoother = CausalGaussianSmoothing(
+                neural_dim, 20, self.gaussianSmoothWidth, dim=1
+            )
+        else:
+            self.gaussianSmoother = GaussianSmoothing(
+                neural_dim, 20, self.gaussianSmoothWidth, dim=1
+            )
         self.dayWeights = torch.nn.Parameter(torch.randn(nDays, neural_dim, neural_dim))
         self.dayBias = torch.nn.Parameter(torch.zeros(nDays, 1, neural_dim))
 

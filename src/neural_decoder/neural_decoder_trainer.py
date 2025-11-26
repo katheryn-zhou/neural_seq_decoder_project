@@ -59,6 +59,7 @@ def getDatasetLoaders(
     return train_loader, test_loader, loadedData
 
 def trainModel(args):
+    print("lalala")
     os.makedirs(args["outputDir"], exist_ok=True)
     torch.manual_seed(args["seed"])
     np.random.seed(args["seed"])
@@ -90,6 +91,7 @@ def trainModel(args):
         kernelLen=args["kernelLen"],
         gaussianSmoothWidth=args["gaussianSmoothWidth"],
         bidirectional=args["bidirectional"],
+        causalGaussian=args['causalGaussian']
     ).to(device)
 
     if args['CTCsmoothing'] == True:
@@ -187,7 +189,7 @@ def trainModel(args):
             with torch.no_grad():
                 # print current learning rate, to make sure the warmup learning rate scheduling is working as expected
                 curr_lr = optimizer.param_groups[0]['lr']
-                print(f"Current learning rate: {curr_lr}")
+                #print(f"Current learning rate: {curr_lr}")
                 # print(f"Current learning rate(s) from scheduler: {scheduler.get_last_lr()}")
 
                 # record training loss
@@ -212,7 +214,7 @@ def trainModel(args):
                     train_total_seq_length += len(trueSeq)
                 train_cer = train_total_edit_distance / train_total_seq_length
                 writer.add_scalar('Metrics/train_CER', train_cer, batch)
-                print(f'train_cer = {train_cer}')
+                #print(f'train_cer = {train_cer}')
 
         # Eval
         if batch % 100 == 0:
@@ -305,6 +307,7 @@ def loadModel(modelDir, nInputLayers=24, device="cuda"):
         kernelLen=args["kernelLen"],
         gaussianSmoothWidth=args["gaussianSmoothWidth"],
         bidirectional=args["bidirectional"],
+        causalGaussian=args['causalGaussian']
     ).to(device)
 
     model.load_state_dict(torch.load(modelWeightPath, map_location=device))
