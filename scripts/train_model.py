@@ -1,5 +1,5 @@
 
-modelName = 'speechBaseline4_CTCsmoothing3'
+modelName = 'speechBaseline4_batchsize=128'
 
 args = {}
 args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
@@ -30,7 +30,7 @@ args['warmupSteps'] = 500
 args['nMasks'] = 2 # number of time masks to implement per batch, make 0 to skip time masking
 args['maxMaskLength'] = 20 # max number of timesteps to mask per single mask
 args['layerNorm'] = True # whether or not to have layernorm layer between GRU and output
-args['CTCsmoothing'] = True
+args['CTCsmoothing'] = 0.1
 print(f"grad_clip = {args['grad_clip']}")
 print(f"warmupSteps = {args['warmupSteps']}")
 print(f"nMasks = {args['nMasks']}")
@@ -40,4 +40,11 @@ print(f"CTCsmoothing = {args['CTCsmoothing']}")
 
 from neural_decoder.neural_decoder_trainer import trainModel
 
-trainModel(args)
+# trainModel(args)
+
+# test different smoothing values for CTC loss
+for smooth_value in [0, 0.1, 0.2, 0.4, 0.6, 0.8, 1]:
+    modelName = f'speechBaseline4_smoothing={smooth_value:.4g}'.replace(".", "_")
+    args['CTCsmoothing'] = smooth_value
+    args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
+    trainModel(args)
