@@ -216,7 +216,7 @@ def trainModel(args):
                 writer.add_scalar('Metrics/train_CER', train_cer, batch)
                 #print(f'train_cer = {train_cer}')
 
-        # Eval
+        # Evaluation
         if batch % 100 == 0:
             with torch.no_grad():
                 model.eval()

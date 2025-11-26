@@ -32,7 +32,7 @@ args['nMasks'] = 2 # number of time masks to implement per batch, make 0 to skip
 args['maxMaskLength'] = 20 # max number of timesteps to mask per single mask
 args['layerNorm'] = True # whether or not to have layernorm layer between GRU and output
 args['CTCsmoothing'] = True
-args['causalGaussian'] = True
+args['causalGaussian'] = True # whether to use causal Gaussian smoothing on the neural data
 
 import sys
 sys.path.insert(1, '/home/onuralp/Desktop/c243/neural_seq_decoder_project/src')

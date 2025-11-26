@@ -26,7 +26,7 @@ class GRUDecoder(nn.Module):
         assert type(layerNorm) == bool
         self.layerNorm = layerNorm
 
-        # Defining the number of layers and the nodes in each layer
+        # Defining the number of layers and the nodes in each layerr
         self.layer_dim = layer_dim
         self.hidden_dim = hidden_dim
         self.neural_dim = neural_dim

@@ -112,7 +112,7 @@ class CausalGaussianSmoothing(nn.Module):
             sigma = [sigma] * dim
 
         # The gaussian kernel is the product of the
-        # gaussian function of each dimension.
+        # gaussian function of each dimension
         kernel = 1
         meshgrids = torch.meshgrid(
             [torch.arange(size, dtype=torch.float32) for size in kernel_size]
