@@ -14,10 +14,10 @@ class SpeechDataset(Dataset):
         self.neural_time_bins = []
         self.phone_seq_lens = []
         self.days = []
-        for day in range(self.n_days):
-            for trial in range(len(data[day]["sentenceDat"])):
-                self.neural_feats.append(data[day]["sentenceDat"][trial])
-                self.phone_seqs.append(data[day]["phonemes"][trial])
+        for day in range(self.n_days): # 24 days
+            for trial in range(len(data[day]["sentenceDat"])): # 280, 360, 420, 180, etc trials per day
+                self.neural_feats.append(data[day]["sentenceDat"][trial]) # shape = (timesteps, channels=256)
+                self.phone_seqs.append(data[day]["phonemes"][trial]) # shape = (500), has varying numbers (~40) of phoneme classes, then all 0s (blank tokens)
                 self.neural_time_bins.append(data[day]["sentenceDat"][trial].shape[0])
                 self.phone_seq_lens.append(data[day]["phoneLens"][trial])
                 self.days.append(day)
@@ -25,7 +25,7 @@ class SpeechDataset(Dataset):
     def __len__(self):
         return self.n_trials
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx): # get info for a trial, can investigate how this changes with days
         neural_feats = torch.tensor(self.neural_feats[idx], dtype=torch.float32)
 
         if self.transform:
