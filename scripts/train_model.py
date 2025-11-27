@@ -1,6 +1,6 @@
 import numpy as np
 
-modelName = 'katherine_best_causalGaussian_compsigma'
+modelName = 'katherine_best_debug'
 
 args = {}
 # args['outputDir'] = '/home/onuralp/Desktop/c243/neural_seq_decoder_project/logs/speech_logs/' + modelName
@@ -28,7 +28,7 @@ args['bidirectional'] = False # True
 args['l2_decay'] = 1e-5 # amount of L2 regularization that is applied
 args['grad_clip'] = 5.0
 args['warmupSteps'] = 500
-args['nMasks'] = 2 # number of time masks to implement per batch, make 0 to skip time masking
+args['nMasks'] = 8 # number of time masks to implement per batch, make 0 to skip time masking
 args['maxMaskLength'] = 20 # max number of timesteps to mask per single mask
 args['layerNorm'] = True # whether or not to have layernorm layer between GRU and output
 args['causalGaussian'] = True # whether to use causal Gaussian smoothing on the neural data
@@ -58,4 +58,21 @@ trainModel(args)
 # args['nUnits'] = 1024
 
 
+
+"""
+#mask_num parameter search
+for mask_num in [0, 2, 4, 8, 16]:
+    modelName = f'katherine_best_mask_num{mask_num}'
+    args['nMasks'] = mask_num
+    args['outputDir'] = '/home/onuralp/Desktop/c243/neural_seq_decoder_project/logs/speech_logs/' + modelName
+    trainModel(args)
+
+args['nMasks'] = 2
+#stride_len parameter search
+for stride_len in [2, 4, 8, 16, 32]:
+    modelName = f'katherine_best_stride_len{stride_len}'
+    args['strideLen'] = stride_len
+    args['outputDir'] = '/home/onuralp/Desktop/c243/neural_seq_decoder_project/logs/speech_logs/' + modelName
+    trainModel(args)
+"""
 
