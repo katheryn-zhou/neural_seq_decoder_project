@@ -58,6 +58,64 @@ def getDatasetLoaders(
 
     return train_loader, test_loader, loadedData
 
+import torch
+from collections import defaultdict
+
+def beam_search_decoder(logits, beam_width=5, blank=0):
+    """
+    logits: Tensor [T, C] (logits or log-probs)
+    beam_width: beam size
+    blank: blank token id (to remove later)
+    
+    Returns:
+        best sequence (list of tokens)
+    """
+    T, C = logits.shape
+    log_probs = torch.log_softmax(logits, dim=-1)  # [T, C]
+
+    # Initialize beams: dict seq_tuple -> log_prob
+    beams = {(): 0.0}
+
+    for t in range(T):
+        next_beams = defaultdict(lambda: float('-inf'))
+
+        # Top-k tokens at this timestep
+        top_log_probs, top_tokens = torch.topk(log_probs[t], beam_width)
+
+        for seq, seq_log_prob in beams.items():
+            for logp, token in zip(top_log_probs.tolist(), top_tokens.tolist()):
+                # New sequence = append token
+                new_seq = seq + (token,)
+                
+                # Sum probabilities if collapsed sequence already exists
+                existing_logp = next_beams[new_seq]
+                new_logp = seq_log_prob + logp
+
+                # log-sum-exp trick
+                if existing_logp == float('-inf'):
+                    next_beams[new_seq] = new_logp
+                else:
+                    a = existing_logp
+                    b = new_logp
+                    max_val = max(a, b)
+                    next_beams[new_seq] = max_val + torch.log(torch.exp(torch.tensor(a - max_val)) + torch.exp(torch.tensor(b - max_val))).item()
+
+        # Keep top beam_width sequences
+        beams = dict(sorted(next_beams.items(), key=lambda x: x[1], reverse=True)[:beam_width])
+
+    # Best sequence
+    best_seq = max(beams.items(), key=lambda x: x[1])[0]
+
+    # Collapse repeats using torch.unique_consecutive
+    best_seq_tensor = torch.tensor(best_seq)
+    collapsed_seq = torch.unique_consecutive(best_seq_tensor).numpy()
+
+    # Remove blank tokens
+    collapsed_seq = np.array([x for x in collapsed_seq if x != blank])
+
+    return collapsed_seq.tolist()
+
+
 def trainModel(args):
     print("lalala")
     os.makedirs(args["outputDir"], exist_ok=True)
@@ -199,6 +257,7 @@ def trainModel(args):
                 train_total_edit_distance = 0
                 train_total_seq_length = 0
                 for iterIdx in range(pred.shape[0]): # for each element of batch?
+                    decodealt = beam_search_decoder(torch.tensor(pred[iterIdx, 0 : adjustedLens[iterIdx], :]), beam_width=3)
                     decodedSeq = torch.argmax(
                         torch.tensor(pred[iterIdx, 0 : adjustedLens[iterIdx], :]),
                         dim=-1,
