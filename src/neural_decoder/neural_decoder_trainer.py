@@ -74,26 +74,34 @@ def beam_search_decoder(logits, beam_width=5, blank=0):
     log_probs = torch.log_softmax(logits, dim=-1)  # [T, C]
 
     # Initialize beams: dict seq_tuple -> log_prob
-    beams = {(): 0.0}
 
-    for t in range(T):
+    top_log_probs, top_tokens = torch.topk(log_probs[0], beam_width)
+    beams = {}
+    for logp, token in zip(top_log_probs.tolist(), top_tokens.tolist()):
+        beams[(token,)] = logp  # tuple sequence -> log prob
+
+
+    for t in range(1,T):
         next_beams = defaultdict(lambda: float('-inf'))
 
         # Top-k tokens at this timestep
-        top_log_probs, top_tokens = torch.topk(log_probs[t], beam_width)
+        top_log_probs, top_tokens = torch.topk(log_probs[t], C)
 
         for seq, seq_log_prob in beams.items():
             for logp, token in zip(top_log_probs.tolist(), top_tokens.tolist()):
                 # New sequence = append token
                 new_seq = seq + (token,)
-                
-                # Sum probabilities if collapsed sequence already exists
-                existing_logp = next_beams[new_seq]
+                collapsed_seq = torch.unique_consecutive(torch.tensor(new_seq)).tolist()
+                last = collapsed_seq[-1]
+                collapsed_seq = collapsed_seq[:-1]
+                collapsed_seq_noblank = tuple([x for x in collapsed_seq if x != blank])
+                collapsed_seq_noblank = collapsed_seq_noblank + (last,)
+                existing_logp = next_beams[collapsed_seq_noblank]
                 new_logp = seq_log_prob + logp
 
                 # log-sum-exp trick
                 if existing_logp == float('-inf'):
-                    next_beams[new_seq] = new_logp
+                    next_beams[collapsed_seq_noblank] = new_logp
                 else:
                     a = existing_logp
                     b = new_logp
@@ -256,7 +264,8 @@ def trainModel(args):
                 train_total_edit_distance = 0
                 train_total_seq_length = 0
                 for iterIdx in range(pred.shape[0]): # for each element of batch?
-                    decodealt = beam_search_decoder(torch.tensor(pred[iterIdx, 0 : adjustedLens[iterIdx], :]), beam_width=3)
+                    decodedSeq = beam_search_decoder(torch.tensor(pred[iterIdx, 0 : adjustedLens[iterIdx], :]), beam_width=args["beamWidth"])
+                    """
                     decodedSeq = torch.argmax(
                         torch.tensor(pred[iterIdx, 0 : adjustedLens[iterIdx], :]),
                         dim=-1,
@@ -264,9 +273,10 @@ def trainModel(args):
                     decodedSeq = torch.unique_consecutive(decodedSeq, dim=-1)
                     decodedSeq = decodedSeq.cpu().detach().numpy()
                     decodedSeq = np.array([i for i in decodedSeq if i != 0])
+                    """
                     trueSeq = np.array(y[iterIdx][0 : y_len[iterIdx]].cpu().detach())
                     matcher = SequenceMatcher(
-                        a=trueSeq.tolist(), b=decodedSeq.tolist()
+                        a=trueSeq.tolist(), b=decodedSeq
                     )
                     train_total_edit_distance += matcher.distance()
                     train_total_seq_length += len(trueSeq)

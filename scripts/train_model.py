@@ -1,12 +1,12 @@
 import numpy as np
 
-modelName = 'katherine_best_debug'
+modelName = 'katherine_best_beamdecoding'
 
 args = {}
-# args['outputDir'] = '/home/onuralp/Desktop/c243/neural_seq_decoder_project/logs/speech_logs/' + modelName
-# args['datasetPath'] = '/home/onuralp/Desktop/c243/neural_seq_decoder/ptDecoder_ctc'
-args['outputDir'] = '/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/' + modelName
-args['datasetPath'] = '/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/ptDecoder_ctc'
+args['outputDir'] = '/home/onuralp/Desktop/c243/neural_seq_decoder_project/logs/speech_logs/' + modelName
+args['datasetPath'] = '/home/onuralp/Desktop/c243/neural_seq_decoder/ptDecoder_ctc'
+#args['outputDir'] = '/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/' + modelName
+#args['datasetPath'] = '/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/ptDecoder_ctc'
 args['seqLen'] = 150
 args['maxTimeSeriesLen'] = 1200
 args['batchSize'] = 64 #128
@@ -33,6 +33,7 @@ args['maxMaskLength'] = 20 # max number of timesteps to mask per single mask
 args['layerNorm'] = True # whether or not to have layernorm layer between GRU and output
 args['causalGaussian'] = True # whether to use causal Gaussian smoothing on the neural data
 args['CTCsmoothing'] = 0.1
+args['beamWidth'] = 5 # beam width for beam search decoding
 
 import sys
 sys.path.insert(1, '/home/onuralp/Desktop/c243/neural_seq_decoder_project/src')
