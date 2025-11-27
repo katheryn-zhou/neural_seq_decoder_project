@@ -12,6 +12,7 @@ class LabelSmoothingCTCLoss(torch.nn.Module):
     """
     def __init__(self, blank=0, smoothing=0.1, reduction='mean', zero_infinity=True):
         super().__init__()
+        print(f'CTC SMOOTHING VAL = {smoothing}')
         self.blank = blank
         self.smoothing = smoothing
         self.reduction = reduction
@@ -41,7 +42,7 @@ class LabelSmoothingCTCLoss(torch.nn.Module):
             # Mix CTC loss with entropy regularization
             # (1 - smoothing) weight on correct predictions
             # smoothing weight on encouraging uncertainty
-            loss = (1 - self.smoothing) * loss - self.smoothing * entropy
+            loss = ((1 - self.smoothing) * loss) - (self.smoothing * entropy)
 
         if self.reduction == 'mean':
             return loss.mean()

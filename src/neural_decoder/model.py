@@ -28,7 +28,9 @@ class GRUDecoder(nn.Module):
 
         # Defining the number of layers and the nodes in each layerr
         self.layer_dim = layer_dim
+        print(f'GRU N LAYERS = {self.layer_dim}')
         self.hidden_dim = hidden_dim
+        print(f'GRU HIDDEN DIM = {self.hidden_dim}')
         self.neural_dim = neural_dim
         self.n_classes = n_classes
         self.nDays = nDays
@@ -95,24 +97,24 @@ class GRUDecoder(nn.Module):
         self.fc_decoder_out = nn.Linear(rnn_output_dim, n_classes + 1)  # +1 for CTC blank
 
     def forward(self, neuralInput, dayIdx):
-        neuralInput = torch.permute(neuralInput, (0, 2, 1))
+        neuralInput = torch.permute(neuralInput, (0, 2, 1)) # permute to (batch_size, nchannels, maxtimesteps)
         neuralInput = self.gaussianSmoother(neuralInput)
-        neuralInput = torch.permute(neuralInput, (0, 2, 1))
+        neuralInput = torch.permute(neuralInput, (0, 2, 1)) # permute back to (batch_size, maxtimesteps, nchannels)
 
         # apply day layer
-        dayWeights = torch.index_select(self.dayWeights, 0, dayIdx)
+        dayWeights = torch.index_select(self.dayWeights, 0, dayIdx) # shape = (batch_size, channels, channels)
         transformedNeural = torch.einsum(
             "btd,bdk->btk", neuralInput, dayWeights
         ) + torch.index_select(self.dayBias, 0, dayIdx)
-        transformedNeural = self.inputLayerNonlinearity(transformedNeural)
+        transformedNeural = self.inputLayerNonlinearity(transformedNeural) # shape same as neuralInput
 
         # stride/kernel
         stridedInputs = torch.permute(
-            self.unfolder(
-                torch.unsqueeze(torch.permute(transformedNeural, (0, 2, 1)), 3)
-            ),
-            (0, 2, 1),
-        )
+            self.unfolder( # unfolder takes strides across input
+                torch.unsqueeze(torch.permute(transformedNeural, (0, 2, 1)), 3) # shape = (batch_size, channels, maxtimestep, 1) = (64, 256, 899, 1)
+            ), # shape = (batch_size, 8192=256*32, 217)?? = (batch_size, n_channels*kernelsize=features per window, n_windows)
+            (0, 2, 1), 
+        ) # final shape = (batch_size, 217, 8192)??
 
         # apply RNN layer
         if self.bidirectional:
@@ -131,6 +133,7 @@ class GRUDecoder(nn.Module):
             ).requires_grad_()
 
         hid, _ = self.gru_decoder(stridedInputs, h0.detach())
+        # hid.shape = (batch_size, n_windows, n_layers) = (64, 217, 1024)
 
         # get seq
         if self.layerNorm:
