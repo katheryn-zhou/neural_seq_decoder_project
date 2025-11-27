@@ -12,6 +12,7 @@ class LabelSmoothingCTCLoss(torch.nn.Module):
     """
     def __init__(self, blank=0, smoothing=0.1, reduction='mean', zero_infinity=True):
         super().__init__()
+        print(f'CTC SMOOTHING VAL = {smoothing}')
         self.blank = blank
         self.smoothing = smoothing
         self.reduction = reduction

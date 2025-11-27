@@ -94,12 +94,10 @@ def trainModel(args):
         causalGaussian=args['causalGaussian']
     ).to(device)
 
-    if args['CTCsmoothing'] == True:
-        print('CTC SMOOTHING')
-        loss_ctc = LabelSmoothingCTCLoss(blank=0, smoothing=args['CTCsmoothing'], reduction='mean', zero_infinity=True)
-    else:
-        print('regular CTC loss')
-        loss_ctc = torch.nn.CTCLoss(blank=0, reduction="mean", zero_infinity=True)
+    loss_ctc = LabelSmoothingCTCLoss(blank=0, smoothing=args['CTCsmoothing'], reduction='mean', zero_infinity=True)
+    # else:
+    #     print('regular CTC loss')
+    #     loss_ctc = torch.nn.CTCLoss(blank=0, reduction="mean", zero_infinity=True)
     optimizer = torch.optim.Adam(
         model.parameters(),
         lr=args["lrStart"],
@@ -132,16 +130,17 @@ def trainModel(args):
     # --train--
     testLoss = []
     testCER = []
+    init_startTime = time.time()
     startTime = time.time()
     for batch in range(args["nBatch"]):
         model.train()
 
         X, y, X_len, y_len, dayIdx = next(iter(trainLoader))
         X, y, X_len, y_len, dayIdx = (
-            X.to(device),
-            y.to(device),
-            X_len.to(device),
-            y_len.to(device),
+            X.to(device), # neural data, shape = (64, 899_can_vary, 256) = (batch_size, maxtimesteps rest get padded to 0s?, channels)
+            y.to(device), # target, shape = (64, 500) = (batch_size, max_num_phonemes rest are padded to 0s)
+            X_len.to(device), # length of each trial's neural data, shape = (batch_size)
+            y_len.to(device), # lenght of each trial's phoneme seq, shape = (batch_size)
             dayIdx.to(device),
         )
 
@@ -159,12 +158,12 @@ def trainModel(args):
             X = time_masker(X)
 
         # Compute prediction error
-        pred = model.forward(X, dayIdx)
+        pred = model.forward(X, dayIdx) # shape = (64, 217, 41) = (batch_size, n_windows, n_classes)
 
         loss = loss_ctc(
-            torch.permute(pred.log_softmax(2), [1, 0, 2]),
+            torch.permute(pred.log_softmax(2), [1, 0, 2]), # first apply log_softmax to dimension 2 = n_classes, then permute to (64, 41, 217) = (batch_size, n_classes, n_windows)
             y,
-            ((X_len - model.kernelLen) / model.strideLen).to(torch.int32),
+            ((X_len - model.kernelLen) / model.strideLen).to(torch.int32), # number of windows for each trial
             y_len,
         )
         loss = torch.sum(loss)
@@ -232,7 +231,7 @@ def trainModel(args):
                         testDayIdx.to(device),
                     )
 
-                    pred = model.forward(X, testDayIdx)
+                    pred = model.forward(X, testDayIdx) # shape = (batch_size, n_windows, n_classes)
                     loss = loss_ctc(
                         torch.permute(pred.log_softmax(2), [1, 0, 2]),
                         y,
@@ -244,12 +243,12 @@ def trainModel(args):
 
                     adjustedLens = ((X_len - model.kernelLen) / model.strideLen).to(
                         torch.int32
-                    )
-                    for iterIdx in range(pred.shape[0]): # for each element of batch?
+                    ) # shape = (batch_size), contains n_windows for each trial in batch
+                    for iterIdx in range(pred.shape[0]): # for each trial in batch:
                         decodedSeq = torch.argmax(
                             torch.tensor(pred[iterIdx, 0 : adjustedLens[iterIdx], :]),
                             dim=-1,
-                        )  # [num_seq,]
+                        )  # [num_seq,] # shape = (n_windows)
                         decodedSeq = torch.unique_consecutive(decodedSeq, dim=-1)
                         decodedSeq = decodedSeq.cpu().detach().numpy()
                         decodedSeq = np.array([i for i in decodedSeq if i != 0])
@@ -273,6 +272,8 @@ def trainModel(args):
                 )
                 startTime = time.time()
 
+                writer.add_scalar('Metrics/timePerBatch', (endTime - startTime)/100, batch)
+
             if len(testCER) > 0 and cer < np.min(testCER):
                 torch.save(model.state_dict(), args["outputDir"] + "/modelWeights")
             testLoss.append(avgDayLoss)
@@ -287,6 +288,8 @@ def trainModel(args):
 
             with open(args["outputDir"] + "/trainingStats", "wb") as file:
                 pickle.dump(tStats, file)
+
+    writer.add_scalar('Metrics/totTrainTime', endTime - init_startTime, batch)
 
 
 def loadModel(modelDir, nInputLayers=24, device="cuda"):
