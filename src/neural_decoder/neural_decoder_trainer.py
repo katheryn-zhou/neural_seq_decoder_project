@@ -123,9 +123,21 @@ def beam_search_decoder(logits, beam_width=5, blank=0):
 
     return collapsed_seq.tolist()
 
+from torchaudio.models.decoder import ctc_decoder
+
 
 def trainModel(args):
     print("lalala")
+    
+    tokens = ["<blank>"] + [str(i) for i in range(1, 41)]
+    decoder = ctc_decoder(
+        lexicon=None,
+        tokens=tokens,
+        blank_token="<blank>",
+        sil_token="<blank>",
+        beam_size=args["beamWidth"]
+    )
+    
     os.makedirs(args["outputDir"], exist_ok=True)
     torch.manual_seed(args["seed"])
     np.random.seed(args["seed"])
@@ -264,7 +276,7 @@ def trainModel(args):
                 train_total_edit_distance = 0
                 train_total_seq_length = 0
                 for iterIdx in range(pred.shape[0]): # for each element of batch?
-                    decodedSeq = beam_search_decoder(torch.tensor(pred[iterIdx, 0 : adjustedLens[iterIdx], :]), beam_width=args["beamWidth"])
+                    #decodedSeq = beam_search_decoder(torch.tensor(pred[iterIdx, 0 : adjustedLens[iterIdx], :]), beam_width=args["beamWidth"])
                     """
                     decodedSeq = torch.argmax(
                         torch.tensor(pred[iterIdx, 0 : adjustedLens[iterIdx], :]),
@@ -274,6 +286,8 @@ def trainModel(args):
                     decodedSeq = decodedSeq.cpu().detach().numpy()
                     decodedSeq = np.array([i for i in decodedSeq if i != 0])
                     """
+                    decodedSeq = decoder(torch.tensor(pred[iterIdx, 0 : adjustedLens[iterIdx], :]).unsqueeze(0).cpu())[0][0][0].detach().numpy().tolist()
+
                     trueSeq = np.array(y[iterIdx][0 : y_len[iterIdx]].cpu().detach())
                     matcher = SequenceMatcher(
                         a=trueSeq.tolist(), b=decodedSeq

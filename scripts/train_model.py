@@ -39,7 +39,7 @@ import sys
 sys.path.insert(1, '/home/onuralp/Desktop/c243/neural_seq_decoder_project/src')
 from neural_decoder.neural_decoder_trainer import trainModel
 
-trainModel(args)
+#trainModel(args)
 
 # # test different smoothing values for CTC loss
 # for smooth_value in [0, 0.1, 0.2, 0.4, 0.6, 0.8, 1]:
@@ -58,7 +58,14 @@ trainModel(args)
 
 # args['nUnits'] = 1024
 
-
+for beamWidth in [1, 3, 5, 7]:
+    args['beamWidth'] = beamWidth
+    #stride_len parameter search
+    for smoothing in [0, 0.2, 0.4, 0.6, 0.8]:
+        args['CTCsmoothing'] = smoothing
+        modelName = f'katherine_best_torch_beamwidth{beamWidth}_smoothing{smoothing}'
+        args['outputDir'] = '/home/onuralp/Desktop/c243/neural_seq_decoder_project/logs/speech_logs/' + modelName
+        trainModel(args)
 
 """
 #mask_num parameter search

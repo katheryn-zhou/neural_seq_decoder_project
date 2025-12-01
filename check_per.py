@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 min_test_CERs = []
 # Build model directory name
-modelName = f'katherine_best_causalGaussian'
+modelName = f'katherine_best_mask_num8'
 dir = '/home/onuralp/Desktop/c243/neural_seq_decoder_project/logs/speech_logs/' + modelName
 
 # Load training stats
