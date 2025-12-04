@@ -38,7 +38,7 @@ import sys
 sys.path.insert(1, '/home/onuralp/Desktop/c243/neural_seq_decoder_project/src')
 from neural_decoder.neural_decoder_trainer import trainModel
 
-trainModel(args)
+# trainModel(args)
 
 # # test different smoothing values for CTC loss
 # for smooth_value in [0, 0.1, 0.2, 0.4, 0.6, 0.8, 1]:
@@ -57,7 +57,20 @@ trainModel(args)
 
 # args['nUnits'] = 1024
 
+# for nLayers in [1, 3, 5, 7, 9]: # can also add 2, 4
+#     modelName = f'nLayers{nLayers}'
+#     args['nLayers'] = nLayers
+#     args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
+#     trainModel(args)
 
+# test different nmasks and mask lengths
+for nMasks in [2, 8]:
+    args['nMasks'] = nMasks
+    for maxMaskLength in [5, 10, 20, 40, 80, 160]:
+        args['maxMaskLength'] = maxMaskLength
+        modelName = f'nMasks{nMasks}_maxMaskLength{maxMaskLength}'
+        args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
+        trainModel(args)
 
 """
 #mask_num parameter search
