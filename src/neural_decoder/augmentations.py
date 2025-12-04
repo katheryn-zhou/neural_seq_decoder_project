@@ -170,6 +170,8 @@ class TimeMasking(nn.Module):
         self.n_masks = n_masks
         self.mask_value = mask_value
         print('TIME MASK INITIALIZED')
+        print(f'n_masks = {self.n_masks}')
+        print(f'max_mask_length = {self.max_mask_length}')
 
     def forward(self, x):
         """
