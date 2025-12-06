@@ -4,12 +4,15 @@ import matplotlib.pyplot as plt
 
 min_test_CERs = []
 # Build model directory name
-modelName = f'katherine_best_mask_num8'
+modelName = f'katherine_best_beamwidth1_smoothing0.2'
 dir = '/home/onuralp/Desktop/c243/neural_seq_decoder_project/logs/speech_logs/' + modelName
 
 # Load training stats
 with open(f"{dir}/trainingStats", "rb") as f:
     tStats = pickle.load(f)
+
+with open(f"{dir}/args", "rb") as f:
+    args = pickle.load(f)
 
 testCER = tStats["testCER"]
 min_test_CERs.append(np.min(testCER))
