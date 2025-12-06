@@ -94,7 +94,11 @@ def trainModel(args):
         causalGaussian=args['causalGaussian']
     ).to(device)
 
-    loss_ctc = LabelSmoothingCTCLoss(blank=0, smoothing=args['CTCsmoothing'], reduction='mean', zero_infinity=True)
+    if args['CTCsmoothing'] == False:
+        print('NO CTC SMOOTHING')
+        loss_ctc = torch.nn.CTCLoss(blank=0, reduction="mean", zero_infinity=True)
+    else:
+        loss_ctc = LabelSmoothingCTCLoss(blank=0, smoothing=args['CTCsmoothing'], reduction='mean', zero_infinity=True)
     # else:
     #     print('regular CTC loss')
     #     loss_ctc = torch.nn.CTCLoss(blank=0, reduction="mean", zero_infinity=True)
@@ -121,7 +125,7 @@ def trainModel(args):
     )
 
     # initialize time masker
-    if args['nMasks'] > 0:
+    if args['nMasks'] > 0 and args['nMasks'] != False:
         print(f"Initializing time mask. args['nMasks'] = {args['nMasks']}")
         time_masker = TimeMasking(max_mask_length=args['maxMaskLength'],
                                   n_masks=args['nMasks'])
@@ -154,7 +158,7 @@ def trainModel(args):
                 * args["constantOffsetSD"]
             )
 
-        if args['nMasks'] > 0:
+        if args['nMasks'] > 0 and args['nMasks'] != False:
             X = time_masker(X)
 
         # Compute prediction error
@@ -173,10 +177,13 @@ def trainModel(args):
         loss.backward()
 
         # GRAD CLIPPING
-        if args['grad_clip'] > 0:
+        if args['grad_clip'] > 0 and args['grad_clip'] != False:
             # Clip gradients to max norm of grad_clip
             # If ||gradient|| > grad_clip, rescale to grad_clip
+            # print(f"grad clip with {args['grad_clip']}")
             torch.nn.utils.clip_grad_norm_(model.parameters(), args['grad_clip'])
+        # else:
+        #     print('no grad clipping')
 
         optimizer.step()
         scheduler.step()
