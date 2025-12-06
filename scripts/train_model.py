@@ -1,6 +1,6 @@
 import numpy as np
 
-modelName = 'test'
+modelName = 'BEST_MODEL'
 
 args = {}
 # args['outputDir'] = '/home/onuralp/Desktop/c243/neural_seq_decoder_project/logs/speech_logs/' + modelName
@@ -10,10 +10,10 @@ args['datasetPath'] = '/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_
 args['seqLen'] = 150
 args['maxTimeSeriesLen'] = 1200
 args['batchSize'] = 64 #128
-args['lrStart'] = 0.02 #0.03
-args['lrEnd'] = 0.02 #0.002
+args['lrStart'] = 0.03 # baseline = 0.02
+args['lrEnd'] = 0.002 # baseline = 0.02
 args['nUnits'] = 1024
-args['nBatch'] = 10000 #15000 #3000
+args['nBatch'] = 15000 #baseline = 10000
 args['nLayers'] = 5 # number of GRU layers.
 args['seed'] = 0
 args['nClasses'] = 40 # number of output classes, not including the CTC blank token
@@ -26,159 +26,16 @@ args['strideLen'] = 4 # umber of neural time bins the input is shifted forward a
 args['kernelLen'] = 32 # number of neural time bins fed to the GRU at each timestep
 args['bidirectional'] = False # True
 args['l2_decay'] = 1e-5 # amount of L2 regularization that is applied
-args['grad_clip'] = False #5.0
-args['warmupSteps'] = 0 #500
-args['nMasks'] = 0 #2 # number of time masks to implement per batch, make 0 to skip time masking
-args['maxMaskLength'] = 0 #20 # max number of timesteps to mask per single mask
-args['layerNorm'] = False #True # whether or not to have layernorm layer between GRU and output
-args['causalGaussian'] = False #True # whether to use causal Gaussian smoothing on the neural data
-args['CTCsmoothing'] = 0 #0.1
+args['grad_clip'] = 5.0 # baseline = False
+args['warmupSteps'] = 500 #baseline = 0
+args['nMasks'] = 8 # baseline = 0 # number of time masks to implement per batch, make 0 to skip time masking
+args['maxMaskLength'] = 40 # baseline = 0 # max number of timesteps to mask per single mask
+args['layerNorm'] = True # baseline = False #True # whether or not to have layernorm layer between GRU and output
+args['causalGaussian'] = True #baseline = False # whether to use causal Gaussian smoothing on the neural data
+args['CTCsmoothing'] = 0.1 #baseline = 0
 
-import sys
-sys.path.insert(1, '/home/onuralp/Desktop/c243/neural_seq_decoder_project/src')
+# import sys
+# sys.path.insert(1, '/home/onuralp/Desktop/c243/neural_seq_decoder_project/src')
 from neural_decoder.neural_decoder_trainer import trainModel
 
-# trainModel(args)
-
-# # test different smoothing values for CTC loss
-# for smooth_value in [0, 0.1, 0.2, 0.4, 0.6, 0.8, 1]:
-#     modelName = f'CTCsmoothing{smooth_value}'
-#     args['CTCsmoothing'] = smooth_value
-#     args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
-#     trainModel(args)
-
-# args['CTCsmoothing'] = 0.1
-
-# for nUnits in [32, 64, 128, 256, 512, 1024, 2048]:
-#     modelName = f'nUnits{nUnits}'
-#     args['nUnits'] = nUnits
-#     args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
-#     trainModel(args)
-
-# args['nUnits'] = 1024
-
-# for nLayers in [1, 3, 5, 7, 9]: # can also add 2, 4
-#     modelName = f'nLayers{nLayers}'
-#     args['nLayers'] = nLayers
-#     args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
-#     trainModel(args)
-
-# # test different nmasks and mask lengths
-# for nMasks in [2, 8]:
-#     args['nMasks'] = nMasks
-#     for maxMaskLength in [5, 10, 20, 40, 80, 160]:
-#         args['maxMaskLength'] = maxMaskLength
-#         modelName = f'nMasks{nMasks}_maxMaskLength{maxMaskLength}'
-#         args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
-#         trainModel(args)
-
-# # # test different smoothing values for CTC loss
-# for grad_clip_val in [0.0, 1.0, 5.0, 10.0, 3.0]:
-#     modelName = f'gradClip{grad_clip_val}'
-#     args['grad_clip'] = grad_clip_val
-#     args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
-#     trainModel(args)
-
-# # # test different smoothing values for CTC loss
-# for grad_clip_val in [5.0]: #, 10.0, 3.0]:
-#     modelName = f'gradClip{grad_clip_val}'
-#     args['grad_clip'] = grad_clip_val
-#     args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
-#     trainModel(args)
-
-# for layerNorm in [False, True]:
-#     modelName = f'layerNorm{layerNorm}'
-#     args['layerNorm'] = layerNorm
-#     args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
-#     trainModel(args)
-
-# for CTC_smoothing in [0.01]: #, 10.0, 3.0]:
-#     modelName = f'BASEMODEL_CTCsmoothing{CTC_smoothing}'
-#     args['CTCsmoothing'] = CTC_smoothing
-#     args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
-#     trainModel(args)
-
-# args['CTCsmoothing'] = 0 #0.1
-
-# # AUGMENTED MODEL
-# args['lrStart'] = 0.03
-# args['lrEnd'] = 0.002 #0.002
-# args['warmupSteps'] = 500
-# args['layerNorm'] = True
-# args['nBatch'] = 15000
-# args['grad_clip'] = 5.0
-# args['nMasks'] = 2
-# args['maxMaskLength'] = 20
-# args['CTCsmoothing'] = 0.1
-
-# modelName = f"AUGMENTED_nMasks{args['nMasks']}len{args['maxMaskLength']}_CTC{args['CTCsmoothing']}"
-# args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
-# trainModel(args)
-
-# args['CTCsmoothing'] = 0
-# modelName = f"AUGMENTED_nMasks{args['nMasks']}len{args['maxMaskLength']}_CTC{args['CTCsmoothing']}"
-# args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
-# trainModel(args)
-
-# args['nBatch'] = 10000
-# args['nMasks'] = 2
-# args['maxMaskLength'] = 20
-# modelName = f"BASEMODEL_nMasks{args['nMasks']}len{args['maxMaskLength']}"
-# args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
-# trainModel(args)
-
-# args['nBatch'] = 10000
-# args['nMasks'] = 0
-# args['maxMaskLength'] = 0
-# args['causalGaussian'] = True
-# modelName = f"BASEMODEL_causalGaussianTRUE"
-# args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
-# trainModel(args)
-
-# args['nBatch'] = 15000
-# args['nMasks'] = 0
-# args['maxMaskLength'] = 0
-# args['causalGaussian'] = False
-# modelName = f"BASEMODEL_nBatch15000"
-# args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
-# trainModel(args)
-
-# args['nBatch'] = 15000
-# args['nMasks'] = 2
-# args['maxMaskLength'] = 20
-# args['causalGaussian'] = False #True
-# args['grad_clip'] = 5.0
-# args['warmupSteps'] = 500
-# args['lrStart'] = 0.03
-# args['lrEnd'] = 0.002 #0.002
-# args['layerNorm'] = True
-# modelName = f"FULLAUGMENTED"
-# args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
-# trainModel(args)
-
-# args['nBatch'] = 15000
-# args['nMasks'] = 2
-# args['maxMaskLength'] = 20
-# args['causalGaussian'] = True
-# args['grad_clip'] = 5.0
-# args['warmupSteps'] = 500
-# args['lrStart'] = 0.03
-# args['lrEnd'] = 0.002 #0.002
-# args['layerNorm'] = True
-# modelName = f"FULLAUGMENTED_causalGaussianTRUE"
-# args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
-# trainModel(args)
-
-# args['nBatch'] = 15000
-# args['nMasks'] = 2
-# args['maxMaskLength'] = 20
-# args['causalGaussian'] = False #True
-# args['grad_clip'] = 5.0
-# args['warmupSteps'] = 500
-# args['lrStart'] = 0.03
-# args['lrEnd'] = 0.002 #0.002
-# args['layerNorm'] = True
-# args['CTCsmoothing'] = 0.1
-# modelName = f"FULLAUGMENTED_CTC0.1"
-# args['outputDir'] = "/Users/KatherynZhou/Desktop/BCI class/neural_seq_decoder_project/models/" + modelName
-# trainModel(args)
+trainModel(args)
