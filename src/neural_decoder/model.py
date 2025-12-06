@@ -45,10 +45,12 @@ class GRUDecoder(nn.Module):
             (self.kernelLen, 1), dilation=1, padding=0, stride=self.strideLen
         )
         if causalGaussian:
+            print('CAUSAL GAUSSIAN')
             self.gaussianSmoother = CausalGaussianSmoothing(
                 neural_dim, 20, self.gaussianSmoothWidth, dim=1
             )
         else:
+            print('NO CAUSAL GAUSSIAN')
             self.gaussianSmoother = GaussianSmoothing(
                 neural_dim, 20, self.gaussianSmoothWidth, dim=1
             )
@@ -136,9 +138,12 @@ class GRUDecoder(nn.Module):
         # hid.shape = (batch_size, n_windows, n_layers) = (64, 217, 1024)
 
         # get seq
-        if self.layerNorm:
+        if self.layerNorm != False:
             # NORMALIZING FORWARD RUN
             # print('NORMALIZING FORWARD RUN')
             hid = self.layer_norm(hid)
+        # else:
+        #     assert self.layerNorm == False
+        #     print('norm', self.layerNorm)
         seq_out = self.fc_decoder_out(hid)
         return seq_out
